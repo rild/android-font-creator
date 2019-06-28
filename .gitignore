@@ -1,5 +1,5 @@
 .idea/*
-./app/src/main/java/jp/naklab/assu/android/android_myownfont/services/APIUtil.java
+/app/src/main/java/jp/naklab/assu/android/android_myownfont/services/APIUtil.java
 *.iml
 .gradle
 /local.properties
