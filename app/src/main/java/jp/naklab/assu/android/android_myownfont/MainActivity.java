@@ -50,13 +50,14 @@ public class MainActivity extends AppCompatActivity {
 
 
         fontCanvas = findViewById(R.id.main_font_canvas);
-        presenter = new MainFontPresenter(this);
-        // これがメイン
-        presenter.parseXML2String();
         initButtons();
 
-        CloudConvert cloudConvert = new CloudConvert();
-        cloudConvert.function();
+//        presenter = new MainFontPresenter(this);
+//        // これがメイン
+//        presenter.parseXML2String();
+//
+//        CloudConvert cloudConvert = new CloudConvert();
+//        cloudConvert.function();
     }
 
     private void initButtons() {
