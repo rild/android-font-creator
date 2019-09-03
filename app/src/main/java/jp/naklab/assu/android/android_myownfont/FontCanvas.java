@@ -12,6 +12,7 @@ import android.view.View;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,9 +81,9 @@ public class FontCanvas extends View {
                 currentPathIndex++;
 
                 currentPath.moveTo(x, y);
-                preX = x;
-                preY = y;
-                pathString += pathData("M", x, y);
+//                preX = x;
+//                preY = y;
+//                pathString += pathData("M", x, y);
 
 
                 invalidate();
@@ -90,20 +91,20 @@ public class FontCanvas extends View {
             case MotionEvent.ACTION_MOVE:
                 if (distance(x, y, preX, preY) < minDistance) break;
                 currentPath.lineTo(x, y);
-                preX = x;
-                preY = y;
-
-                pathString += pathData("L", x, y);
+//                preX = x;
+//                preY = y;
+//
+//                pathString += pathData("L", x, y);
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 if (distance(x, y, preX, preY) < minDistance) break;
 
                 currentPath.lineTo(x, y);
-                preX = x;
-                preY = y;
-
-                pathString += pathData("L", x, y);
+//                preX = x;
+//                preY = y;
+//
+//                pathString += pathData("L", x, y);
                 invalidate();
                 break;
         }
@@ -134,5 +135,9 @@ public class FontCanvas extends View {
         paths.remove(currentPathIndex);
         currentPathIndex--;
         invalidate();
+    }
+
+    public void exportCanvasAsString() {
+
     }
 }
