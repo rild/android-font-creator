@@ -2,7 +2,8 @@ package jp.naklab.assu.android.android_myownfont;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -10,31 +11,38 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-
-import jp.naklab.assu.android.android_myownfont.entity.Player;
-import jp.naklab.assu.android.android_myownfont.services.CloudConvert;
-import jp.naklab.assu.android.android_myownfont.svgandroid.SVG;
-import jp.naklab.assu.android.android_myownfont.svgandroid.SVGBuilder;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     TextView textView;
     //    MainPresenter presenter;
     MainFontPresenter presenter;
     FontCanvas fontCanvas;
+
+    ImageView imageView;
+
+//    static {
+//        System.loadLibrary("opencv_java3");
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +66,15 @@ public class MainActivity extends AppCompatActivity {
 //
 //        CloudConvert cloudConvert = new CloudConvert();
 //        cloudConvert.function();
+
+        if (!OpenCVLoader.initDebug()) {
+            Log.i("OpenCV", "Failed");
+        } else {
+            Log.i("OpenCV", "successfully built !");
+        }
+
+        OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
+        edgeDetector.onImageScan(this);
     }
 
     private void initButtons() {
@@ -115,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILE_NAME = "sample_svg_rialto.svg";
     // コピー先のディレクトリパス
     private static final String BASE_PATH = Environment.getExternalStorageDirectory().getPath() + SEPARATOR + "fonts";
+
     private boolean copyAssetsFile() {
         // コピー先のディレクトリ
         File dir = new File(BASE_PATH);

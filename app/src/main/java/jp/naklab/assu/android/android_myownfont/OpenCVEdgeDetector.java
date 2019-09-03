@@ -19,9 +19,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OpenCVEdgeDetector {
-    private void onImageScan(Context context) {
+    public void onImageScan(Context context) {
         /* ①：画像読み込み */
-        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.a_character_image);
+        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.a_character_image_small);
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bmp, mat, true);
+
+        /* ②：画像を二値化 */
+//        mat = getThreshold(mat);
+
+        /* ③：輪郭の座標を取得 */
+//        List<MatOfPoint> contours = getContour(mat);
+
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.Canny(mat, mat, 100, 200);
+
+
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+
+        Imgproc.threshold(mat, mat, 128.0, 255.0, Imgproc.THRESH_BINARY);
+        Mat hierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
+        Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+
+        List<List<Point>> points = contour2point(contours);
+    }
+
+    public Mat matImageScan(Context context) {
+        /* ①：画像読み込み */
+        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.a_character_image_small);
         Mat mat = new Mat();
         Utils.bitmapToMat(bmp, mat, true);
 
@@ -31,6 +56,25 @@ public class OpenCVEdgeDetector {
         /* ③：輪郭の座標を取得 */
         List<MatOfPoint> contours = getContour(mat);
         List<List<Point>> points = contour2point(contours);
+
+        return mat;
+    }
+
+    public void onImageScan(Bitmap bitmap) {
+        /* ①：画像読み込み */
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bitmap, mat, true);
+
+        /* ②：画像を二値化 */
+        mat = getThreshold(mat);
+
+        /* ③：輪郭の座標を取得 */
+        List<MatOfPoint> contours = getContour(mat);
+        List<List<Point>> points = contour2point(contours);
+
+        for (int i = 0; i < contours.size(); i++) {
+            DebugUtils.print("Countours", contours.get(i).toString());
+        }
     }
 
     private Mat getThreshold(Mat mat) {
@@ -86,7 +130,7 @@ public class OpenCVEdgeDetector {
         Imgproc.drawContours(mat_mask, contour_yuv2, -1, color, -1);
 
         Imgproc.cvtColor(mat_mask, mat_mask, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.threshold(mat_mask, mat_mask, 0.0, 255.0, Imgproc.THRESH_BINARY_INV | Imgproc.THRESH_OTSU);
+        Imgproc.threshold(mat_mask, mat_mask, 128.0, 255.0, Imgproc.THRESH_BINARY_INV | Imgproc.THRESH_OTSU);
 
         return mat_mask;
     }
@@ -94,40 +138,33 @@ public class OpenCVEdgeDetector {
     private List<MatOfPoint> getContour(Mat mat) {
         List<MatOfPoint> contour = new ArrayList<MatOfPoint>();
 
-        /* 二値画像中の輪郭を検出 */
-        List<MatOfPoint> tmp_contours = new ArrayList<MatOfPoint>();
+        Imgproc.threshold(mat, mat, 128.0, 255.0, Imgproc.THRESH_BINARY);
         Mat hierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
-        Imgproc.findContours(mat, tmp_contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
-        for (int i = 0; i < tmp_contours.size(); i++) {
-            if (Imgproc.contourArea(tmp_contours.get(i)) < mat.size().area() / (100 * 1)) {
-                /* サイズが小さいエリアは無視 */
-                continue;
-            }
+        Imgproc.findContours(mat, contour, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
 
-            MatOfPoint2f ptmat2 = new MatOfPoint2f(tmp_contours.get(i).toArray());
-            MatOfPoint2f approx = new MatOfPoint2f();
-            MatOfPoint approxf1 = new MatOfPoint();
-
-            /* 輪郭線の周囲長を取得 */
-            double arclen = Imgproc.arcLength(ptmat2, true);
-            /* 直線近似 */
-            Imgproc.approxPolyDP(ptmat2, approx, 0.02 * arclen, true);
-            approx.convertTo(approxf1, CvType.CV_32S);
-            if (approxf1.size().area() != 4) {
-                /* 四角形以外は無視 */
-                continue;
-            }
-
-            /* 輪郭情報を登録 */
-            contour.add(approxf1);
-        }
+//        List<MatOfPoint> tmp_contours = new ArrayList<MatOfPoint>();
+//        Imgproc.findContours(mat, tmp_contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+//        for (int i = 0; i < tmp_contours.size(); i++) {
+//            MatOfPoint2f ptmat2 = new MatOfPoint2f(tmp_contours.get(i).toArray());
+//            MatOfPoint2f approx = new MatOfPoint2f();
+//            MatOfPoint approxf1 = new MatOfPoint();
+//
+//            /* 輪郭線の周囲長を取得 */
+//            double arclen = Imgproc.arcLength(ptmat2, true);
+//            /* 直線近似 */
+//            Imgproc.approxPolyDP(ptmat2, approx, 0.02 * arclen, true);
+//            approx.convertTo(approxf1, CvType.CV_32S);
+//
+//            /* 輪郭情報を登録 */
+//            contour.add(approxf1);
+//        }
 
         return contour;
     }
 
     private List<List<Point>> contour2point(List<MatOfPoint> contour) {
         List<List<Point>> points = new ArrayList<List<Point>>();
-        for(int i = 0; i < contour.size(); i++) {
+        for (int i = 0; i < contour.size(); i++) {
             points.add(contour.get(i).toList());
         }
         return points;
