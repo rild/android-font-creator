@@ -41,16 +41,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
-    TextView textView;
     //    MainPresenter presenter;
-    MainFontPresenter presenter;
+//    MainFontPresenter presenter;
     FontCanvas fontCanvas;
 
-    ImageView imageView;
-
-//    static {
-//        System.loadLibrary("opencv_java3");
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,55 +77,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public Bitmap loadBitmapFromView(View v) {
-//        int w = v.getLayoutParams().width;
-//        int h = v.getLayoutParams().height;
-        int w = v.getWidth();
-        int h = v.getHeight();
-        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(b);
-        v.layout(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
-        v.draw(c);
-        return b;
-    }
-
-    public @NonNull
-    static Bitmap createBitmapFromView(@NonNull View view, int width, int height) {
-        if (width > 0 && height > 0) {
-            view.measure(View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
-                            .convertDpToPixels(width), View.MeasureSpec.EXACTLY),
-                    View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
-                            .convertDpToPixels(height), View.MeasureSpec.EXACTLY));
-        }
-
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-        view.setDrawingCacheEnabled(true);
-        view.buildDrawingCache(true);
-        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
-        view.setDrawingCacheEnabled(false);
-
-        return bitmap;
-    }
-
-    static Bitmap createBitmapFromView(@NonNull View view) {
-        int width = view.getWidth();
-        int height = view.getHeight();
-        if (width > 0 && height > 0) {
-            view.measure(View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
-                            .convertDpToPixels(width), View.MeasureSpec.EXACTLY),
-                    View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
-                            .convertDpToPixels(height), View.MeasureSpec.EXACTLY));
-        }
-
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-        view.setDrawingCacheEnabled(true);
-        view.buildDrawingCache(true);
-        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
-        view.setDrawingCacheEnabled(false);
-
-        return bitmap;
-    }
-
     private void initButtons() {
         findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,54 +90,23 @@ public class MainActivity extends AppCompatActivity {
                 fontCanvas.undo();
             }
         });
-        final Button buttonMake = findViewById(R.id.button_make);
+        Button buttonMake = findViewById(R.id.button_make);
         buttonMake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
-                Bitmap bmp = fontCanvas.getDrawingCache();
-//                Bitmap bmp = createBitmapFromView(fontCanvas, fontCanvas.getWidth(), fontCanvas.getHeight());
-                Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
-                bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
-//                Bitmap bmp2 = BitmapFactory.decodeResource(getResources(), R.drawable.equal_character_image_small);
-                String glyphString = edgeDetector.makeGlyphString(bmp);
-            }
-        });
-        findViewById(R.id.button_save).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                save();
-            }
-        });
-        final ImageView preview = findViewById(R.id.imageview_preview);
-        preview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                preview.setBackground(new BitmapDrawable(fontCanvas.getDrawingCache()));
+                makeFont();
             }
         });
     }
 
-    private void save() {
-        String fileName = "myfont.jpg";
-//        fileName = "Only_my_font/" + fileName;
+    private void makeFont() {
+        OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
+        Bitmap bmp = fontCanvas.getDrawingCache();
+        Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
+        bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
 
-        String filePath = Environment.getExternalStorageDirectory().getPath() + "/Pictures/";
-        fileName = filePath + fileName;
-
-        if (fontCanvas.getDrawingCache() == null) {   //save失敗
-            Toast.makeText(getApplicationContext(), "何か記入してね！", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String imgSaved = MediaStore.Images.Media.insertImage(
-                getContentResolver(), fontCanvas.getDrawingCache(), fileName, "drawing");
-
-        if (imgSaved != null) {
-            Toast.makeText(getApplicationContext(), "Fontが保存されました！" + imgSaved, Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(getApplicationContext(), "保存に失敗しました", Toast.LENGTH_SHORT).show();
-        }
+        // これが目的の svg string
+        String glyphString = edgeDetector.makeGlyphString(bmp);
     }
 
     // permissionの確認

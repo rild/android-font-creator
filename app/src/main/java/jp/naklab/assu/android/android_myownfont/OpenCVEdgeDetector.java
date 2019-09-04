@@ -179,13 +179,13 @@ public class OpenCVEdgeDetector {
         Utils.bitmapToMat(bmp, mat, true);
         Imgproc.threshold(mat, mat, 128.0, 255.0, Imgproc.THRESH_BINARY);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.Canny(mat, mat, 110, 130);
+//        Imgproc.Canny(mat, mat, 110, 130);
 
         Mat mHierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
 
         // These lines are in function onCameraFrame
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        Imgproc.findContours(mat, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
+        Imgproc.findContours(mat, contours, mHierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
         List<List<Point>> points = contour2point(contours);
         return points;
@@ -193,8 +193,10 @@ public class OpenCVEdgeDetector {
 
     // path から svg の文字列を生成する: points → svg string
     private String makeGlyphString(List<List<Point>> points, String glyphName, int horizAdvX, String unicode) {
+
         String out = "<glyph d=\"";
         for (int j = 0; j < points.size(); j++) {
+            if (j == 0) continue; // 外周はスキップ
             out = out + "M";
             List<Point> pointList = points.get(j);
             for (int i = 0; i < pointList.size(); i++) {
@@ -202,6 +204,7 @@ public class OpenCVEdgeDetector {
             }
 
         }
+        out = out + "Z"; // 終端文字？
         out = out + "\" glyph-name=\"" + glyphName +
                 "\" horiz-adv-x=\"" + horizAdvX +
                 "\" unicode=\"" + unicode +

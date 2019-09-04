@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".OpenCVEdgeDetectionActivity">
+
         </activity>
         <activity android:name=".MainActivity">
             <intent-filter>

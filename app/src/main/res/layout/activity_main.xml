@@ -78,21 +78,5 @@
             android:textSize="12sp" />
 
 
-        <Space
-            android:layout_width="8dp"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/button_save"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:text="save"
-            android:textSize="12sp" />
-
-        <ImageView
-            android:id="@+id/imageview_preview"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:textSize="12sp" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

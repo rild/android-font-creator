@@ -37,40 +37,18 @@ public class OpenCVEdgeDetectionActivity extends AppCompatActivity {
 
         ImageView imageView = findViewById(R.id.imageview);
 
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.equal_character_image_small);
+        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.b_character_small);
         Mat mat = new Mat();
         Utils.bitmapToMat(bmp, mat, true);
-        Imgproc.threshold(mat, mat, 128.0, 255.0, Imgproc.THRESH_BINARY);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.Canny(mat, mat, 110, 130);
+        Imgproc.threshold(mat, mat, 128.0, 255.0, Imgproc.THRESH_BINARY);
+//        Imgproc.Canny(mat, mat, 110, 130);
 
-//        Mat mHierarchy = new Mat();
         Mat mHierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
 
-// These lines are in function onCameraFrame
+        // These lines are in function onCameraFrame
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        Imgproc.findContours(mat, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
-
-//        List<MatOfPoint> tmp_contours = new ArrayList<MatOfPoint>();
-//        Imgproc.findContours(mat, tmp_contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
-//        for (int i = 0; i < tmp_contours.size(); i++) {
-//            MatOfPoint2f ptmat2 = new MatOfPoint2f(tmp_contours.get(i).toArray());
-//            MatOfPoint2f approx = new MatOfPoint2f();
-//            MatOfPoint approxf1 = new MatOfPoint();
-//
-//            /* 輪郭線の周囲長を取得 */
-//            double arclen = Imgproc.arcLength(ptmat2, true);
-//            /* 直線近似 */
-//            Imgproc.approxPolyDP(ptmat2, approx, 0.05 * arclen, false);
-//            approx.convertTo(approxf1, CvType.CV_32S);
-//
-//            /* 輪郭情報を登録 */
-//            contours.add(approxf1);
-//        }
-
-
-//        Scalar CONTOUR_COLOR = new Scalar(255, 0, 0, 255);
-//        Imgproc.drawContours(mat, contours, -1, CONTOUR_COLOR);
+        Imgproc.findContours(mat, contours, mHierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
 
         Bitmap outBmp = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
@@ -95,6 +73,8 @@ public class OpenCVEdgeDetectionActivity extends AppCompatActivity {
     private String parseContours2Path(List<List<Point>> contours) {
         String out = "<glyph d=\"";
         for (int j = 0; j < contours.size(); j++) {
+            // 画像の輪郭はスキップ
+            if (j == 0) continue;
             out = out + "M";
             List<Point> points = contours.get(j);
             for (int i = 0; i < points.size(); i++) {
