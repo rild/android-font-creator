@@ -1,50 +1,48 @@
 package jp.naklab.assu.android.android_myownfont;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import com.google.android.material.snackbar.Snackbar;
+
+import org.opencv.android.OpenCVLoader;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     //    MainPresenter presenter;
 //    MainFontPresenter presenter;
     FontCanvas fontCanvas;
 
+
+    Spinner spinner;
+    String currentItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +57,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        spinner = findViewById(R.id.spinner_font_menu);
         fontCanvas = findViewById(R.id.main_font_canvas);
         fontCanvas.setDrawingCacheEnabled(true);
-        initButtons();
+        initViews();
+        currentItem = FontMaker.getUId(spinner.getSelectedItemPosition());
 
 //        presenter = new MainFontPresenter(this);
 //        // これがメイン
@@ -77,7 +77,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initButtons() {
+    private File accessFile(String fileName) {
+        // asset の画像ファイル名
+//        String fileName = "sample_image.jpg";
+        File file;
+        File path = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        file = new File(path, fileName);
+        return file;
+    }
+
+    private void saveImage(String fileName) {
+        SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
+        Bitmap bitmap = fontCanvas.getDrawingCache(); //保存したいBitmap
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        String bitmapStr = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString(fileName, bitmapStr);
+        editor.apply();
+    }
+
+    private void readImage(String fileName) {
+        SharedPreferences pref = getSharedPreferences("pref", Context.MODE_PRIVATE);
+        String s = pref.getString(fileName, "");
+        if (!s.equals("")) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            byte[] b = Base64.decode(s, Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length).copy(Bitmap.Config.ARGB_8888, true);
+            fontCanvas.setBackground(new BitmapDrawable(bitmap));
+        }
+    }
+
+    private void initViews() {
         findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,23 +129,38 @@ public class MainActivity extends AppCompatActivity {
                 makeFont();
             }
         });
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (!spinner.isFocusable()) {
+                    spinner.setFocusable(true);
+                    return;
+                }
+                Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentItem + "→" + FontMaker.getUId(i),
+                        Snackbar.LENGTH_SHORT).show();
+                saveImage(currentItem);
+                fontCanvas.clear();
+                currentItem = FontMaker.getUId(i);
+                readImage(currentItem);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        spinner.setFocusable(false);
+
     }
 
-    String currentFontId = FontMaker.U21_EXCLAMATION;
     private void makeFont() {
         Bitmap bmp = fontCanvas.getDrawingCache();
         Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
         bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
 
         // これが目的の svg string
-//        OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
-//        String glyphString = edgeDetector.makeGlyphString(bmp);
         FontMaker maker = new FontMaker();
-        if (FontMaker.U21_EXCLAMATION.equals(currentFontId)) {
-            maker.addExcla(bmp);
-        } else if ((FontMaker.U22_DOUBLE_QUOTE.equals(currentFontId))){
-            maker.addDoubleQuo(bmp);
-        }
 
         String svg = maker.makeFontSvg("only font");
     }
