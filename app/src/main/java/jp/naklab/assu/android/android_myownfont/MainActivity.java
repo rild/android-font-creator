@@ -99,14 +99,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    String currentFontId = FontMaker.U21_EXCLAMATION;
     private void makeFont() {
-        OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
         Bitmap bmp = fontCanvas.getDrawingCache();
         Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
         bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
 
         // これが目的の svg string
-        String glyphString = edgeDetector.makeGlyphString(bmp);
+//        OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
+//        String glyphString = edgeDetector.makeGlyphString(bmp);
+        FontMaker maker = new FontMaker();
+        if (FontMaker.U21_EXCLAMATION.equals(currentFontId)) {
+            maker.addExcla(bmp);
+        } else if ((FontMaker.U22_DOUBLE_QUOTE.equals(currentFontId))){
+            maker.addDoubleQuo(bmp);
+        }
+
+        String svg = maker.makeFontSvg("only font");
     }
 
     // permissionの確認

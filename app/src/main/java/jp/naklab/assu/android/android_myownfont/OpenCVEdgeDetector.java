@@ -173,6 +173,10 @@ public class OpenCVEdgeDetector {
         return makeGlyphString(detectEdgePoints(bmp), "uni22", 584, "&#x22;");
     }
 
+    public String makeGlyphString(Bitmap bmp, String glyphName, int horizAdvX, String unicode) {
+        return makeGlyphString(detectEdgePoints(bmp), glyphName, horizAdvX, unicode);
+    }
+
     // 画像から path を抽出する: bmp → points
     private List<List<Point>> detectEdgePoints(Bitmap bmp) {
         Mat mat = new Mat();
