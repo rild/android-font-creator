@@ -36,6 +36,7 @@ public class OpenCVEdgeDetectionActivity extends AppCompatActivity {
         }
 
         ImageView imageView = findViewById(R.id.imageview);
+
         Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.equal_character_image_small);
         Mat mat = new Mat();
         Utils.bitmapToMat(bmp, mat, true);
@@ -92,8 +93,6 @@ public class OpenCVEdgeDetectionActivity extends AppCompatActivity {
     }
 
     private String parseContours2Path(List<List<Point>> contours) {
-
-        MatOfPoint2f a;
         String out = "<glyph d=\"";
         for (int j = 0; j < contours.size(); j++) {
             out = out + "M";

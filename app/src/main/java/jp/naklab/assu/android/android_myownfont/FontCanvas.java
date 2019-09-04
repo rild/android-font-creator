@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 
 import java.io.IOException;
@@ -29,9 +30,6 @@ public class FontCanvas extends View {
     List<Path> paths;
     int currentPathIndex;
 
-    float preX, preY;
-    int minDistance = 10;
-
     Context context;
     Paint paint;
 
@@ -47,7 +45,7 @@ public class FontCanvas extends View {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setStrokeWidth(10);
+        paint.setStrokeWidth(30);
     }
 
     public FontCanvas(Context context) {
@@ -63,9 +61,13 @@ public class FontCanvas extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        canvas.save();
+
         for (Path p: paths) {
             canvas.drawPath(p, paint);
         }
+
+        canvas.restore();
 
     }
 
@@ -89,7 +91,6 @@ public class FontCanvas extends View {
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (distance(x, y, preX, preY) < minDistance) break;
                 currentPath.lineTo(x, y);
 //                preX = x;
 //                preY = y;
@@ -98,8 +99,6 @@ public class FontCanvas extends View {
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                if (distance(x, y, preX, preY) < minDistance) break;
-
                 currentPath.lineTo(x, y);
 //                preX = x;
 //                preY = y;
@@ -116,14 +115,6 @@ public class FontCanvas extends View {
         Log.d(TAG, pathString);
 
         return true;
-    }
-
-    private float distance(float x, float y, float x2, float y2) {
-        return (float) Math.sqrt(Math.pow(x - x2, 2) + Math.pow(y- y2, 2));
-    }
-
-    private String pathData(String action, float x, float y) {
-        return pathString += action +  x + " " +  y;
     }
 
     public void clear() {

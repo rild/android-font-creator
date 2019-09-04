@@ -4,24 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_green"
     tools:context=".MainActivity">
 
     <jp.naklab.assu.android.android_myownfont.FontCanvas
         android:id="@+id/main_font_canvas"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:background="@android:color/white"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintDimensionRatio="w,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
     <LinearLayout
-        android:orientation="horizontal"
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="72dp"
@@ -29,6 +31,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,33 +39,60 @@
 
         <Button
             android:id="@+id/button_undo"
-            android:text="undo"
-            android:textSize="12sp"
             android:layout_width="48dp"
-            android:layout_height="48dp" />
+            android:layout_height="48dp"
+            android:text="undo"
+            android:textSize="12sp" />
 
         <Space
-            android:layout_width="16dp"
+            android:layout_width="8dp"
             android:layout_height="match_parent" />
 
         <Button
-            android:text="redo"
-            android:textSize="12sp"
             android:id="@+id/button_redo"
             android:layout_width="48dp"
-            android:layout_height="48dp" />
+            android:layout_height="48dp"
+            android:text="redo"
+            android:textSize="12sp" />
 
         <Space
-            android:layout_width="16dp"
+            android:layout_width="8dp"
             android:layout_height="match_parent" />
 
         <Button
-            android:text="clear"
-            android:textSize="12sp"
             android:id="@+id/button_clear"
             android:layout_width="48dp"
-            android:layout_height="48dp" />
+            android:layout_height="48dp"
+            android:text="clear"
+            android:textSize="12sp" />
+
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/button_make"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="make"
+            android:textSize="12sp" />
 
 
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/button_save"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="save"
+            android:textSize="12sp" />
+
+        <ImageView
+            android:id="@+id/imageview_preview"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:textSize="12sp" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

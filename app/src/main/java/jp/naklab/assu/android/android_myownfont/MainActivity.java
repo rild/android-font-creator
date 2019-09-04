@@ -1,16 +1,23 @@
 package jp.naklab.assu.android.android_myownfont;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     TextView textView;
@@ -58,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         fontCanvas = findViewById(R.id.main_font_canvas);
+        fontCanvas.setDrawingCacheEnabled(true);
         initButtons();
 
 //        presenter = new MainFontPresenter(this);
@@ -72,9 +81,55 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.i("OpenCV", "successfully built !");
         }
+    }
 
-        OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
-        edgeDetector.onImageScan(this);
+    public Bitmap loadBitmapFromView(View v) {
+//        int w = v.getLayoutParams().width;
+//        int h = v.getLayoutParams().height;
+        int w = v.getWidth();
+        int h = v.getHeight();
+        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        v.layout(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
+        v.draw(c);
+        return b;
+    }
+
+    public @NonNull
+    static Bitmap createBitmapFromView(@NonNull View view, int width, int height) {
+        if (width > 0 && height > 0) {
+            view.measure(View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
+                            .convertDpToPixels(width), View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
+                            .convertDpToPixels(height), View.MeasureSpec.EXACTLY));
+        }
+
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache(true);
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
+
+        return bitmap;
+    }
+
+    static Bitmap createBitmapFromView(@NonNull View view) {
+        int width = view.getWidth();
+        int height = view.getHeight();
+        if (width > 0 && height > 0) {
+            view.measure(View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
+                            .convertDpToPixels(width), View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(DynamicUnitUtils
+                            .convertDpToPixels(height), View.MeasureSpec.EXACTLY));
+        }
+
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache(true);
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
+
+        return bitmap;
     }
 
     private void initButtons() {
@@ -90,6 +145,54 @@ public class MainActivity extends AppCompatActivity {
                 fontCanvas.undo();
             }
         });
+        final Button buttonMake = findViewById(R.id.button_make);
+        buttonMake.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OpenCVEdgeDetector edgeDetector = new OpenCVEdgeDetector();
+                Bitmap bmp = fontCanvas.getDrawingCache();
+//                Bitmap bmp = createBitmapFromView(fontCanvas, fontCanvas.getWidth(), fontCanvas.getHeight());
+                Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
+                bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
+//                Bitmap bmp2 = BitmapFactory.decodeResource(getResources(), R.drawable.equal_character_image_small);
+                String glyphString = edgeDetector.makeGlyphString(bmp);
+            }
+        });
+        findViewById(R.id.button_save).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                save();
+            }
+        });
+        final ImageView preview = findViewById(R.id.imageview_preview);
+        preview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                preview.setBackground(new BitmapDrawable(fontCanvas.getDrawingCache()));
+            }
+        });
+    }
+
+    private void save() {
+        String fileName = "myfont.jpg";
+//        fileName = "Only_my_font/" + fileName;
+
+        String filePath = Environment.getExternalStorageDirectory().getPath() + "/Pictures/";
+        fileName = filePath + fileName;
+
+        if (fontCanvas.getDrawingCache() == null) {   //save失敗
+            Toast.makeText(getApplicationContext(), "何か記入してね！", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String imgSaved = MediaStore.Images.Media.insertImage(
+                getContentResolver(), fontCanvas.getDrawingCache(), fileName, "drawing");
+
+        if (imgSaved != null) {
+            Toast.makeText(getApplicationContext(), "Fontが保存されました！" + imgSaved, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "保存に失敗しました", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // permissionの確認
@@ -164,5 +267,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
 }

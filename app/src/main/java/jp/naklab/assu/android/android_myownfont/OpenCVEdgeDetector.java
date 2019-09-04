@@ -9,7 +9,6 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -168,5 +167,67 @@ public class OpenCVEdgeDetector {
             points.add(contour.get(i).toList());
         }
         return points;
+    }
+
+    public String makeGlyphString(Bitmap bmp) {
+        return makeGlyphString(detectEdgePoints(bmp), "uni22", 584, "&#x22;");
+    }
+
+    // 画像から path を抽出する: bmp → points
+    private List<List<Point>> detectEdgePoints(Bitmap bmp) {
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bmp, mat, true);
+        Imgproc.threshold(mat, mat, 128.0, 255.0, Imgproc.THRESH_BINARY);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.Canny(mat, mat, 110, 130);
+
+        Mat mHierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
+
+        // These lines are in function onCameraFrame
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        Imgproc.findContours(mat, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
+
+        List<List<Point>> points = contour2point(contours);
+        return points;
+    }
+
+    // path から svg の文字列を生成する: points → svg string
+    private String makeGlyphString(List<List<Point>> points, String glyphName, int horizAdvX, String unicode) {
+        String out = "<glyph d=\"";
+        for (int j = 0; j < points.size(); j++) {
+            out = out + "M";
+            List<Point> pointList = points.get(j);
+            for (int i = 0; i < pointList.size(); i++) {
+                out = out + pointList.get(i).x + " " + pointList.get(i).y + " ";
+            }
+
+        }
+        out = out + "\" glyph-name=\"" + glyphName +
+                "\" horiz-adv-x=\"" + horizAdvX +
+                "\" unicode=\"" + unicode +
+                "\" vert-adv-y=\"1000\" />";
+        return out;
+    }
+
+    public Bitmap makeGlyphBitmap(Context context, Bitmap bmp) {
+        Mat mat = new Mat();
+        Utils.bitmapToMat(bmp, mat, true);
+        Imgproc.threshold(mat, mat, 128.0, 255.0, Imgproc.THRESH_BINARY);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.Canny(mat, mat, 110, 130);
+
+//        Mat mHierarchy = new Mat();
+        Mat mHierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
+
+// These lines are in function onCameraFrame
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        Imgproc.findContours(mat, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
+
+        Bitmap outBmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_green);
+        Mat out = new Mat(mat.size(), mat.type());
+        Scalar CONTOUR_COLOR = new Scalar(255, 0, 0, 255);
+        Imgproc.drawContours(out, contours, -1, CONTOUR_COLOR);
+        Utils.matToBitmap(out, outBmp);
+        return outBmp;
     }
 }
