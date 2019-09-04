@@ -5,9 +5,105 @@ import android.graphics.Bitmap;
 import java.util.ArrayList;
 
 public class FontMaker {
-    static final String U21_EXCLAMATION = "uni21";
-    static final String U22_DOUBLE_QUOTE = "uni22";
-    static final String U23_DOUBLE_HASH = "uni23";
+    static final String U21_EXCLAMATION = "uni21"; // !
+    static final String U22_DOUBLE_QUOTE = "uni22"; // "
+    static final String U23_HASH = "uni23"; // #
+    static final String U24_DOLLAR = "uni24"; // $
+    static final String U25_PERCENT = "uni25"; // %
+    static final String U26_AND = "uni26"; // &
+    static final String U27_SINGLE_QUOTE = "uni27"; // '
+    static final String U28_ROUND_BRACKET_START = "uni28"; // (
+    static final String U29_ROUND_BRACKET_END = "uni29"; // )
+    static final String U2A_ASTERISK = "uni2a"; // *
+    static final String U2B_PLUS = "uni2b"; // +
+    static final String U2C_COMMA = "uni2c"; // comma
+    static final String U2D_HYPHEN = "uni2d"; // - hyphen
+    static final String U2E_PERIOD = "uni2e"; // .
+    static final String U2F_SLASH = "uni2f"; // /
+    static final String U30_0 = "uni30"; // 0
+    static final String U31_1 = "uni31"; // 1
+    static final String U32_2 = "uni32"; // 2
+    static final String U33_3 = "uni33"; // 3
+    static final String U34_4 = "uni34"; // 4
+    static final String U35_5 = "uni35"; // 5
+    static final String U36_6 = "uni36"; // 6
+    static final String U37_7 = "uni37"; // 7
+    static final String U38_8 = "uni38"; // 8
+    static final String U39_9 = "uni39"; // 9
+
+    static final String U3A_COLON = "uni3a"; // : colon
+    static final String U3B_SEMI_COLON = "uni3b";// ; semi colon
+    static final String U3C_LESS_THAN_SIGN = "uni3c";// < less than sign
+    static final String U3D_EQUAL = "uni3d";// = equal
+    static final String U3E_GRATER_THAN_SIGN = "uni3e";// > grater than sign
+    static final String U3F_AT_SIGN = "uni3f"; // ?
+    static final String U40_AT_SIGN = "uni40"; // @
+
+    static final String U41_UPPER_A = "uni41";
+    static final String U42_UPPER_B = "uni42";
+    static final String U43_UPPER_C = "uni43";
+    static final String U44_UPPER_D = "uni44";
+    static final String U45_UPPER_E = "uni45";
+    static final String U46_UPPER_F = "uni46";
+    static final String U47_UPPER_G = "uni47";
+    static final String U48_UPPER_H = "uni48";
+    static final String U49_UPPER_I = "uni49";
+    static final String U4a_UPPER_J = "uni4a";
+    static final String U4b_UPPER_K = "uni4b";
+    static final String U4c_UPPER_L = "uni4c";
+    static final String U4d_UPPER_M = "uni4d";
+    static final String U4e_UPPER_N = "uni4e";
+    static final String U4f_UPPER_O = "uni4f";
+    static final String U50_UPPER_P = "uni50";
+    static final String U51_UPPER_Q = "uni51";
+    static final String U52_UPPER_R = "uni52";
+    static final String U53_UPPER_S = "uni53";
+    static final String U54_UPPER_T = "uni54";
+    static final String U55_UPPER_U = "uni55";
+    static final String U56_UPPER_V = "uni56";
+    static final String U57_UPPER_W = "uni57";
+    static final String U58_UPPER_X = "uni58";
+    static final String U59_UPPER_Y = "uni59";
+    static final String U5A_UPPER_Z = "uni5a";
+
+    static final String U5B_SQUARE_BRACKET_START = "uni5b";
+    static final String U5C_BACK_SLASH = "uni5c";
+    static final String U5D_SQUARE_BRACKET_END = "uni5d";
+    static final String U5E_CARET = "uni5e"; // ^
+    static final String U5F_UNDERBAR = "uni5f";
+    static final String U60_BACK_QUOTE = "uni60";
+
+    static final String U61_LOWER_A = "uni61";
+    static final String U62_LOWER_B = "uni62";
+    static final String U63_LOWER_C = "uni63";
+    static final String U64_LOWER_D = "uni64";
+    static final String U65_LOWER_E = "uni65";
+    static final String U66_LOWER_F = "uni66";
+    static final String U67_LOWER_G = "uni67";
+    static final String U68_LOWER_H = "uni68";
+    static final String U69_LOWER_I = "uni69";
+    static final String U6A_LOWER_J = "uni6a";
+    static final String U6B_LOWER_K = "uni6b";
+    static final String U6C_LOWER_L = "uni6c";
+    static final String U6D_LOWER_M = "uni6d";
+    static final String U6E_LOWER_N = "uni6e";
+    static final String U6F_LOWER_O = "uni6f";
+    static final String U70_LOWER_P = "uni70";
+    static final String U71_LOWER_Q = "uni71";
+    static final String U72_LOWER_R = "uni72";
+    static final String U73_LOWER_S = "uni73";
+    static final String U74_LOWER_T = "uni74";
+    static final String U75_LOWER_U = "uni75";
+    static final String U76_LOWER_V = "uni76";
+    static final String U77_LOWER_W = "uni77";
+    static final String U78_LOWER_X = "uni78";
+    static final String U79_LOWER_Y = "uni79";
+    static final String U7A_LOWER_Z = "uni7a";
+
+    static final String U7B_CURLY_BRACKETS_START = "uni7b"; // {
+    static final String U7C_VETICAL_BAR = "uni7c"; // |
+    static final String U7D_CURLY_BRACKETS_END = "uni7d"; // }
+    static final String U7E_TILDE = "uni7e"; // ~
 
     String fontId = "RialtoNF";
     String fontFamily = "Rialto NF";
@@ -21,8 +117,8 @@ public class FontMaker {
 
     public String makeFontSvg(String fontName) {
         String svg = "";
-        svg = createFontSvgStart(fontName.replaceAll("\\s+",""), fontName);
-        for (String glyph: fontGlyphs) {
+        svg = createFontSvgStart(fontName.replaceAll("\\s+", ""), fontName);
+        for (String glyph : fontGlyphs) {
             svg = svg + glyph + "\n";
         }
         svg = svg + fontSvgEnd;
@@ -447,7 +543,7 @@ public class FontMaker {
 //
 //
 //
-//   // [
+//   // [ square bracket
 //   <glyph
 //   d="M404-155L112-155L112 765L404 765L404 733L323 733L323-123L404-123L404-155M80-155L36-155L36 765L80 765L80-155Z"
 //   glyph-name="uni5b" horiz-adv-x="440" unicode="&#x5b;" vert-adv-y="1000" />
@@ -458,7 +554,7 @@ public class FontMaker {
 //   <glyph d="M390-199L36 801L164 801L518-199L390-199Z" glyph-name="uni5c" horiz-adv-x="554"
 //   unicode="&#x5c;" vert-adv-y="1000" />
 //
-//   // ]
+//   // ] square bracket
 //   <glyph
 //   d="M404-155L192-155L192 765L404 765L404-155M161-155L36-155L36-123L119-123L119 733L36 733L36 765L161 765L161-155Z"
 //   glyph-name="uni5d" horiz-adv-x="440" unicode="&#x5d;" vert-adv-y="1000" />
@@ -672,13 +768,13 @@ public class FontMaker {
 //
 //
 //
-//   // |
+//   // | vertical bar
 //   <glyph d="M166-199L36-199L36 801L166 801L166-199Z" glyph-name="uni7c" horiz-adv-x="202"
 //   unicode="&#x7c;" vert-adv-y="1000" />
 //
 //
 //
-//   // }
+//   // } curly brackets
 //   <glyph
 //   d="M120-180L36-180L36-149L123-149L123 260L152 286L123 312L123 720L36 720L36 752L120 752Q140 752 159 749L159-177Q140-180 120-180M189-170L189 742Q275 718 329.50 646.50Q384 575 384 485L384 302L427 302L427 270L384 270L384 87Q384-3 329.50-74.50Q275-146 189-170Z"
 //   glyph-name="uni7d" horiz-adv-x="463" unicode="&#x7d;" vert-adv-y="1000" />
