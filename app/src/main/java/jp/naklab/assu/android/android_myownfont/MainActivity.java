@@ -79,6 +79,11 @@ public class MainActivity extends AppCompatActivity {
 
         currentItem = FontMaker.getUId(spinner.getSelectedItemPosition());
 
+
+        // 画像の保存・読み込みを行うために必要なプログラム
+        imageRepository = new ImageRepository();
+
+
 //        presenter = new MainFontPresenter(this);
 //        // これがメイン
 //        presenter.parseXML2String();
@@ -87,9 +92,6 @@ public class MainActivity extends AppCompatActivity {
 //        cloudConvert.function();
 
 
-
-        // 画像の保存・読み込みを行うために必要なプログラム
-        imageRepository = new ImageRepository();
 
     }
 
@@ -153,8 +155,8 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.LENGTH_SHORT).show();
 
         Bitmap bmp = fontCanvas.getDrawingCache();
-        Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
-        bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
+        // FontMaker の方で font-svg ファイルへ定義する vert-adv-y を 1000 としているので Bitmap のサイズも 1000 にリサイズする
+        bmp = Bitmap.createScaledBitmap(bmp, 1000, 1000, false);
 
         imageRepository.save2ContentProvider(this, bmp, currentItem);
         clearFontCanvas();
@@ -181,6 +183,9 @@ public class MainActivity extends AppCompatActivity {
 
         String svg = maker.makeFontSvg("only font");
         writeSvg(svg);
+
+        Snackbar.make(spinner, "書き出しが完了しました" ,
+                Snackbar.LENGTH_SHORT).show();
 //        progressDialog.dismiss();
     }
 

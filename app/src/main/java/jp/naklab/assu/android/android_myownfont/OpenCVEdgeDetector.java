@@ -195,6 +195,7 @@ public class OpenCVEdgeDetector {
         return points;
     }
 
+
     // path から svg の文字列を生成する: points → svg string
     private String makeGlyphString(List<List<Point>> points, String glyphName, int horizAdvX, String unicode) {
 
@@ -204,6 +205,9 @@ public class OpenCVEdgeDetector {
             out = out + "M";
             List<Point> pointList = points.get(j);
             for (int i = 0; i < pointList.size(); i++) {
+//                pointList.get(i).x = pointList.get(i).x * 2;
+                // Android のy座標系は下向きなのに対して、font-svg の glyph では上向き座標系なので座標系の変換を行う
+                pointList.get(i).y = pointList.get(i).y * -1 + 1000;
                 out = out + pointList.get(i).x + " " + pointList.get(i).y + " ";
             }
 
@@ -223,10 +227,10 @@ public class OpenCVEdgeDetector {
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
         Imgproc.Canny(mat, mat, 110, 130);
 
-//        Mat mHierarchy = new Mat();
+        //        Mat mHierarchy = new Mat();
         Mat mHierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
 
-// These lines are in function onCameraFrame
+        // These lines are in function onCameraFrame
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         Imgproc.findContours(mat, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
 
