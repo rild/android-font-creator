@@ -48,12 +48,15 @@ public class MainActivity extends AppCompatActivity {
     //    MainPresenter presenter;
 //    MainFontPresenter presenter;
     FontCanvas fontCanvas;
-
+    Button buttonMake;
+    Button buttonUndo;
+    Button buttonRedo;
+    Button buttonClear;
 
     Spinner spinner;
     String currentItem;
-    HashMap<String, Uri> fontCacheUri;
 
+    ImageRepository imageRepository;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,12 +68,15 @@ public class MainActivity extends AppCompatActivity {
         } else {
             copyAssetsFile();
         }
+        // OpenCV をアプリで使うために必要
+        if (!OpenCVLoader.initDebug()) {
+            Log.i("OpenCV", "Failed");
+        } else {
+            Log.i("OpenCV", "successfully built !");
+        }
 
-
-        spinner = findViewById(R.id.spinner_font_menu);
-        fontCanvas = findViewById(R.id.main_font_canvas);
-        fontCanvas.setDrawingCacheEnabled(true);
         initViews();
+
         currentItem = FontMaker.getUId(spinner.getSelectedItemPosition());
 
 //        presenter = new MainFontPresenter(this);
@@ -80,90 +86,45 @@ public class MainActivity extends AppCompatActivity {
 //        CloudConvert cloudConvert = new CloudConvert();
 //        cloudConvert.function();
 
-        if (!OpenCVLoader.initDebug()) {
-            Log.i("OpenCV", "Failed");
-        } else {
-            Log.i("OpenCV", "successfully built !");
-        }
 
-        fontCacheUri = new HashMap<>();
+
+        // 画像の保存・読み込みを行うために必要なプログラム
+        imageRepository = new ImageRepository();
 
     }
 
-
-
-
-    private void save2ContentProvider(Bitmap bitmap, String name) {
-        if (fontCacheUri.get(name) == null) {
-            String uriString = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, name, null);
-            fontCacheUri.put(name, Uri.parse(uriString));
-        }
-    }
-
-    private Bitmap loadFromContentProvider(String name) {
-        Bitmap bmp = null;
-        Uri bmpUri = fontCacheUri.get(name);
-
-        if (bmpUri == null) {
-            // hash map に存在しない→初めてロード
-            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.background_white);
-            return bmp;
-        }
-        try {
-            bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), bmpUri);
-        } catch (IOException e) {
-            // 何らかの理由で外部に書き出したファイルがなくなっていた場合は白地を出す
-            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.background_white);
-        }
-        return bmp;
-    }
-
-    // TODO delete all images saved in this app from ContentProvider
-    private void clearAllCaches() {
-        for (String key: fontCacheUri.keySet()) {
-
-        }
-    }
     private void initViews() {
-        findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener() {
+        // init views
+        spinner = findViewById(R.id.spinner_font_menu);
+        fontCanvas = findViewById(R.id.main_font_canvas);
+
+        buttonClear = findViewById(R.id.button_clear);
+        buttonUndo = findViewById(R.id.button_undo);
+        buttonMake = findViewById(R.id.button_make);
+
+        // init click listeners
+        buttonClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 clearFontCanvas();
             }
         });
-        findViewById(R.id.button_undo).setOnClickListener(new View.OnClickListener() {
+        buttonUndo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 fontCanvas.undo();
             }
         });
-        Button buttonMake = findViewById(R.id.button_make);
         buttonMake.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 makeFont();
             }
         });
-
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (!spinner.isFocusable()) {
-                    spinner.setFocusable(true);
-                    return;
-                }
-                Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentItem + "→" + FontMaker.getUId(i),
-                        Snackbar.LENGTH_SHORT).show();
-
-                Bitmap bmp = fontCanvas.getDrawingCache();
-                Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
-                bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
-
-                save2ContentProvider(bmp, currentItem);
-                clearFontCanvas();
-                currentItem = FontMaker.getUId(i);
-                fontCanvas.setBackground(new BitmapDrawable(loadFromContentProvider(currentItem)));
-
+                onFontItemSelected(i);
             }
 
             @Override
@@ -171,8 +132,34 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        // 書いた情報を取得するために DrawingCache を有効にしておく
+        fontCanvas.setDrawingCacheEnabled(true);
+
+        // スピナーの要素を選んだ時の処理が初回起動時に動かないようにする
         spinner.setFocusable(false);
 
+    }
+
+    private void onFontItemSelected(int position) {
+        // スピナーの要素を選んだ時の処理が初回起動時に動かないようにする
+        if (!spinner.isFocusable()) {
+            spinner.setFocusable(true);
+            return;
+        }
+
+        // 何から何に変更されたのかを通知する（別になくてもいい）
+        Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentItem + "→" + FontMaker.getUId(position),
+                Snackbar.LENGTH_SHORT).show();
+
+        Bitmap bmp = fontCanvas.getDrawingCache();
+        Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
+        bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
+
+        imageRepository.save2ContentProvider(this, bmp, currentItem);
+        clearFontCanvas();
+        currentItem = FontMaker.getUId(position);
+        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadFromContentProvider(this, currentItem)));
     }
 
     private void clearFontCanvas() {
@@ -181,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void makeFont() {
-
 //        ProgressDialog progressDialog = ProgressDialog.newInstance("フォントの書き出し中");
 //        progressDialog.show(getSupportFragmentManager(), "Tag");
 
@@ -189,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         FontMaker maker = new FontMaker();
         for (int i = 0; i < FontMaker.getApplyFontSize() + 1; i++) {
             String fontId = FontMaker.getUId(i);
-            Bitmap bmp = loadFromContentProvider(fontId);
+            Bitmap bmp = imageRepository.loadFromContentProvider(this, fontId);
             maker.addGlyph(bmp, fontId);
         }
 
