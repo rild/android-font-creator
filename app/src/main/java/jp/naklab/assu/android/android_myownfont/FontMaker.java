@@ -156,6 +156,9 @@ public class FontMaker {
             "    </defs>\n" +
             "</svg>";
 
+    public static int getApplyFontSize() {
+        return 93;
+    }
     public static String getUId(int idx) {
         if (idx == 0) return U21_EXCLAMATION;
         else if (idx == 1) return U22_DOUBLE_QUOTE;

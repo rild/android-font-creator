@@ -33,6 +33,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.opencv.android.OpenCVLoader;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -153,7 +154,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentItem + "→" + FontMaker.getUId(i),
                         Snackbar.LENGTH_SHORT).show();
-                save2ContentProvider(fontCanvas.getDrawingCache(), currentItem);
+
+                Bitmap bmp = fontCanvas.getDrawingCache();
+                Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
+                bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
+
+                save2ContentProvider(bmp, currentItem);
                 clearFontCanvas();
                 currentItem = FontMaker.getUId(i);
                 fontCanvas.setBackground(new BitmapDrawable(loadFromContentProvider(currentItem)));
@@ -175,15 +181,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void makeFont() {
-        Bitmap bmp = fontCanvas.getDrawingCache();
-        Bitmap sizeTemplate = BitmapFactory.decodeResource(getResources(), R.drawable.background_green);
-        bmp = Bitmap.createScaledBitmap(bmp, sizeTemplate.getWidth(), sizeTemplate.getHeight(), false);
+
+//        ProgressDialog progressDialog = ProgressDialog.newInstance("フォントの書き出し中");
+//        progressDialog.show(getSupportFragmentManager(), "Tag");
 
         // これが目的の svg string
         FontMaker maker = new FontMaker();
+        for (int i = 0; i < FontMaker.getApplyFontSize() + 1; i++) {
+            String fontId = FontMaker.getUId(i);
+            Bitmap bmp = loadFromContentProvider(fontId);
+            maker.addGlyph(bmp, fontId);
+        }
 
         String svg = maker.makeFontSvg("only font");
+        writeSvg(svg);
+//        progressDialog.dismiss();
     }
+
 
     // permissionの確認
     public void checkPermission() {
@@ -225,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILE_NAME = "sample_svg_rialto.svg";
     // コピー先のディレクトリパス
     private static final String BASE_PATH = Environment.getExternalStorageDirectory().getPath() + SEPARATOR + "fonts";
+//  "/storage/emulated/0/fonts/sample_svg_rialto.svg";
 
     private boolean copyAssetsFile() {
         // コピー先のディレクトリ
@@ -242,6 +257,41 @@ public class MainActivity extends AppCompatActivity {
         try {
             InputStream inputStream = getAssets().open(FILE_NAME);
             FileOutputStream fileOutputStream = new FileOutputStream(new File(BASE_PATH + SEPARATOR + FILE_NAME), false);
+
+            byte[] buffer = new byte[1024];
+            int length = 0;
+            while ((length = inputStream.read(buffer)) >= 0) {
+                fileOutputStream.write(buffer, 0, length);
+            }
+
+            fileOutputStream.close();
+            inputStream.close();
+        } catch (IOException e) {
+            // 何かテキトーに
+            return false;
+        }
+        return true;
+    }
+
+    private static final String FILE_NAME_TMP = "sample.svg";
+    private boolean writeSvg(String svgString) {
+        // コピー先のディレクトリ
+        File dir = new File(BASE_PATH);
+
+        // コピー先のディレクトリが存在しない場合は生成
+        if (!dir.exists()) {
+            // ディレクトリの生成に失敗したら終了
+            if (!dir.mkdirs()) {
+                return false;
+            }
+        }
+
+        // こぴーしょり
+        try {
+//            InputStream inputStream = getAssets().open(FILE_NAME);
+            InputStream inputStream = new ByteArrayInputStream(svgString.getBytes("utf-8"));
+
+            FileOutputStream fileOutputStream = new FileOutputStream(new File(BASE_PATH + SEPARATOR + FILE_NAME_TMP), false);
 
             byte[] buffer = new byte[1024];
             int length = 0;
