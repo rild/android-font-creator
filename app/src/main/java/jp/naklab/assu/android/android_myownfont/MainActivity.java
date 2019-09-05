@@ -9,18 +9,23 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.icu.text.SimpleDateFormat;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.os.Bundle;
+import android.provider.UserDictionary;
 import android.util.Base64;
 import android.util.Log;
+import android.util.LruCache;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -31,9 +36,12 @@ import org.opencv.android.OpenCVLoader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     //    MainPresenter presenter;
@@ -43,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     Spinner spinner;
     String currentItem;
+    HashMap<String, Uri> fontCacheUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,45 +84,50 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.i("OpenCV", "successfully built !");
         }
+
+        fontCacheUri = new HashMap<>();
+
     }
 
-    private File accessFile(String fileName) {
-        // asset の画像ファイル名
-//        String fileName = "sample_image.jpg";
-        File file;
-        File path = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        file = new File(path, fileName);
-        return file;
-    }
 
-    private void saveImage(String fileName) {
-        SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-        Bitmap bitmap = fontCanvas.getDrawingCache(); //保存したいBitmap
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        String bitmapStr = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putString(fileName, bitmapStr);
-        editor.apply();
-    }
 
-    private void readImage(String fileName) {
-        SharedPreferences pref = getSharedPreferences("pref", Context.MODE_PRIVATE);
-        String s = pref.getString(fileName, "");
-        if (!s.equals("")) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            byte[] b = Base64.decode(s, Base64.DEFAULT);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length).copy(Bitmap.Config.ARGB_8888, true);
-            fontCanvas.setBackground(new BitmapDrawable(bitmap));
+    private void save2ContentProvider(Bitmap bitmap, String name) {
+        if (fontCacheUri.get(name) == null) {
+            String uriString = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, name, null);
+            fontCacheUri.put(name, Uri.parse(uriString));
         }
     }
 
+    private Bitmap loadFromContentProvider(String name) {
+        Bitmap bmp = null;
+        Uri bmpUri = fontCacheUri.get(name);
+
+        if (bmpUri == null) {
+            // hash map に存在しない→初めてロード
+            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.background_white);
+            return bmp;
+        }
+        try {
+            bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), bmpUri);
+        } catch (IOException e) {
+            // 何らかの理由で外部に書き出したファイルがなくなっていた場合は白地を出す
+            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.background_white);
+        }
+        return bmp;
+    }
+
+    // TODO delete all images saved in this app from ContentProvider
+    private void clearAllCaches() {
+        for (String key: fontCacheUri.keySet()) {
+
+        }
+    }
     private void initViews() {
         findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fontCanvas.clear();
+                clearFontCanvas();
             }
         });
         findViewById(R.id.button_undo).setOnClickListener(new View.OnClickListener() {
@@ -139,10 +153,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentItem + "→" + FontMaker.getUId(i),
                         Snackbar.LENGTH_SHORT).show();
-                saveImage(currentItem);
-                fontCanvas.clear();
+                save2ContentProvider(fontCanvas.getDrawingCache(), currentItem);
+                clearFontCanvas();
                 currentItem = FontMaker.getUId(i);
-                readImage(currentItem);
+                fontCanvas.setBackground(new BitmapDrawable(loadFromContentProvider(currentItem)));
+
             }
 
             @Override
@@ -152,6 +167,11 @@ public class MainActivity extends AppCompatActivity {
         });
         spinner.setFocusable(false);
 
+    }
+
+    private void clearFontCanvas() {
+        fontCanvas.destroyDrawingCache();
+        fontCanvas.clear();
     }
 
     private void makeFont() {
