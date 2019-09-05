@@ -1,4 +1,4 @@
-package jp.naklab.assu.android.android_myownfont;
+package jp.naklab.assu.android.android_myownfont._;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
+
+import jp.naklab.assu.android.android_myownfont.R;
 
 public class ProgressDialog extends DialogFragment {
     private static final int DELAY_MILLISECOND = 450;

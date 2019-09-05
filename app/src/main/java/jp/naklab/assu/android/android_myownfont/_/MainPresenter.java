@@ -1,4 +1,4 @@
-package jp.naklab.assu.android.android_myownfont;
+package jp.naklab.assu.android.android_myownfont._;
 
 import android.content.Context;
 
