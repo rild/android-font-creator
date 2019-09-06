@@ -173,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void makeFont() {
-        // これが目的の svg string
         FontMaker maker = new FontMaker();
         for (int i = 0; i < FontMaker.getApplyFontSize() + 1; i++) {
             String fontId = FontMaker.getUId(i);
@@ -181,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             maker.addGlyph(bmp, fontId);
         }
 
+        // これが目的の svg string
         String svg = maker.makeFontSvg(fontName);
         fontRepository.writeSvg(svg);
 
