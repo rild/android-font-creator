@@ -74,7 +74,6 @@ public class FontRepository {
 
         // こぴーしょり
         try {
-//            InputStream inputStream = getAssets().open(FILE_NAME);
             InputStream inputStream = new ByteArrayInputStream(svgString.getBytes("utf-8"));
 
             FileOutputStream fileOutputStream = new FileOutputStream(new File(BASE_PATH + SEPARATOR + FILE_NAME_TMP), false);
