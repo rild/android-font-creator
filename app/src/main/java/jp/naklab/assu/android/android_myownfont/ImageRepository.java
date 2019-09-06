@@ -13,14 +13,14 @@ import java.util.HashMap;
 
 // アプリで画像の保存・読み込みを行うクラス
 public class ImageRepository {
-    HashMap<String, Uri> fontCacheUri;
+    private HashMap<String, Uri> fontCacheUri;
+    private Context context;
 
-    public ImageRepository() {
+    public ImageRepository(Context context) {
         fontCacheUri = new HashMap<>();
     }
 
-    public void save2ContentProvider(Context context,
-                                     Bitmap bmp, String name) {
+    public void save2ContentProvider(Bitmap bmp, String name) {
         if (fontCacheUri.get(name) == null) {
             String uriString = MediaStore.Images.Media.insertImage(context.getContentResolver(), bmp, name, null);
             fontCacheUri.put(name, Uri.parse(uriString));
@@ -32,8 +32,7 @@ public class ImageRepository {
         }
     }
 
-    public Bitmap loadFromContentProvider(Context context,
-                                          String name) {
+    public Bitmap loadFromContentProvider(String name) {
         Bitmap bmp = null;
         Uri bmpUri = fontCacheUri.get(name);
 

@@ -1,31 +1,18 @@
 package jp.naklab.assu.android.android_myownfont;
 
 import android.Manifest;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.icu.text.SimpleDateFormat;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.os.Bundle;
-import android.provider.UserDictionary;
-import android.util.Base64;
 import android.util.Log;
-import android.util.LruCache;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -33,20 +20,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.opencv.android.OpenCVLoader;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-
 public class MainActivity extends AppCompatActivity {
-    //    MainPresenter presenter;
-//    MainFontPresenter presenter;
     FontCanvas fontCanvas;
     Button buttonMake;
     Button buttonUndo;
@@ -54,19 +28,25 @@ public class MainActivity extends AppCompatActivity {
     Button buttonClear;
 
     Spinner spinner;
-    String currentItem;
+    String currentUId;
 
     ImageRepository imageRepository;
+    FontRepository fontRepository;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        fontRepository = new FontRepository(this);
+        // 画像の保存・読み込みを行うために必要なプログラム
+        imageRepository = new ImageRepository(this);
+
         // Android 6, API 23以上でパーミッシンの確認
         if (Build.VERSION.SDK_INT >= 23) {
             checkPermission();
         } else {
-            copyAssetsFile();
+            fontRepository.copyAssetsFile();
         }
         // OpenCV をアプリで使うために必要
         if (!OpenCVLoader.initDebug()) {
@@ -77,20 +57,10 @@ public class MainActivity extends AppCompatActivity {
 
         initViews();
 
-        currentItem = FontMaker.getUId(spinner.getSelectedItemPosition());
+        currentUId = FontMaker.getUId(spinner.getSelectedItemPosition());
 
-
-        // 画像の保存・読み込みを行うために必要なプログラム
-        imageRepository = new ImageRepository();
-
-
-//        presenter = new MainFontPresenter(this);
-//        // これがメイン
-//        presenter.parseXML2String();
-//
 //        CloudConvert cloudConvert = new CloudConvert();
 //        cloudConvert.function();
-
 
 
     }
@@ -151,17 +121,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // 何から何に変更されたのかを通知する（別になくてもいい）
-        Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentItem + "→" + FontMaker.getUId(position),
+        Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentUId + "→" + FontMaker.getUId(position),
                 Snackbar.LENGTH_SHORT).show();
 
         Bitmap bmp = fontCanvas.getDrawingCache();
         // FontMaker の方で font-svg ファイルへ定義する vert-adv-y を 1000 としているので Bitmap のサイズも 1000 にリサイズする
         bmp = Bitmap.createScaledBitmap(bmp, 1000, 1000, false);
 
-        imageRepository.save2ContentProvider(this, bmp, currentItem);
+        imageRepository.save2ContentProvider(bmp, currentUId);
         clearFontCanvas();
-        currentItem = FontMaker.getUId(position);
-        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadFromContentProvider(this, currentItem)));
+        currentUId = FontMaker.getUId(position);
+        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadFromContentProvider(currentUId)));
     }
 
     private void clearFontCanvas() {
@@ -177,14 +147,14 @@ public class MainActivity extends AppCompatActivity {
         FontMaker maker = new FontMaker();
         for (int i = 0; i < FontMaker.getApplyFontSize() + 1; i++) {
             String fontId = FontMaker.getUId(i);
-            Bitmap bmp = imageRepository.loadFromContentProvider(this, fontId);
+            Bitmap bmp = imageRepository.loadFromContentProvider(fontId);
             maker.addGlyph(bmp, fontId);
         }
 
         String svg = maker.makeFontSvg("only font");
-        writeSvg(svg);
+        fontRepository.writeSvg(svg);
 
-        Snackbar.make(spinner, "書き出しが完了しました" ,
+        Snackbar.make(spinner, "書き出しが完了しました",
                 Snackbar.LENGTH_SHORT).show();
 //        progressDialog.dismiss();
     }
@@ -196,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED) {
-            copyAssetsFile();
+            fontRepository.copyAssetsFile();
         }
         // 拒否していた場合
         else {
@@ -221,81 +191,5 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,},
                     REQUEST_PERMISSION);
         }
-    }
-
-
-    // ファイルセパレータ
-    public static final String SEPARATOR = File.separator;
-    // コピー対象のファイル名
-    private static final String FILE_NAME = "sample_svg_rialto.svg";
-    // コピー先のディレクトリパス
-    private static final String BASE_PATH = Environment.getExternalStorageDirectory().getPath() + SEPARATOR + "fonts";
-//  "/storage/emulated/0/fonts/sample_svg_rialto.svg";
-
-    private boolean copyAssetsFile() {
-        // コピー先のディレクトリ
-        File dir = new File(BASE_PATH);
-
-        // コピー先のディレクトリが存在しない場合は生成
-        if (!dir.exists()) {
-            // ディレクトリの生成に失敗したら終了
-            if (!dir.mkdirs()) {
-                return false;
-            }
-        }
-
-        // こぴーしょり
-        try {
-            InputStream inputStream = getAssets().open(FILE_NAME);
-            FileOutputStream fileOutputStream = new FileOutputStream(new File(BASE_PATH + SEPARATOR + FILE_NAME), false);
-
-            byte[] buffer = new byte[1024];
-            int length = 0;
-            while ((length = inputStream.read(buffer)) >= 0) {
-                fileOutputStream.write(buffer, 0, length);
-            }
-
-            fileOutputStream.close();
-            inputStream.close();
-        } catch (IOException e) {
-            // 何かテキトーに
-            return false;
-        }
-        return true;
-    }
-
-    private static final String FILE_NAME_TMP = "sample.svg";
-    private boolean writeSvg(String svgString) {
-        // コピー先のディレクトリ
-        File dir = new File(BASE_PATH);
-
-        // コピー先のディレクトリが存在しない場合は生成
-        if (!dir.exists()) {
-            // ディレクトリの生成に失敗したら終了
-            if (!dir.mkdirs()) {
-                return false;
-            }
-        }
-
-        // こぴーしょり
-        try {
-//            InputStream inputStream = getAssets().open(FILE_NAME);
-            InputStream inputStream = new ByteArrayInputStream(svgString.getBytes("utf-8"));
-
-            FileOutputStream fileOutputStream = new FileOutputStream(new File(BASE_PATH + SEPARATOR + FILE_NAME_TMP), false);
-
-            byte[] buffer = new byte[1024];
-            int length = 0;
-            while ((length = inputStream.read(buffer)) >= 0) {
-                fileOutputStream.write(buffer, 0, length);
-            }
-
-            fileOutputStream.close();
-            inputStream.close();
-        } catch (IOException e) {
-            // 何かテキトーに
-            return false;
-        }
-        return true;
     }
 }
