@@ -33,10 +33,14 @@ public class MainActivity extends AppCompatActivity {
     ImageRepository imageRepository;
     FontRepository fontRepository;
 
+    String fontName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        fontName = "only font";
 
         fontRepository = new FontRepository(this);
         // 画像の保存・読み込みを行うために必要なプログラム
@@ -58,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         initViews();
 
         currentUId = FontMaker.getUId(spinner.getSelectedItemPosition());
+        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadImageBitmap(fontName, currentUId)));
 
 //        CloudConvert cloudConvert = new CloudConvert();
 //        cloudConvert.function();
@@ -127,16 +132,20 @@ public class MainActivity extends AppCompatActivity {
         Bitmap bmp = fontCanvas.getDrawingCache();
         // FontMaker の方で font-svg ファイルへ定義する vert-adv-y を 1000 としているので Bitmap のサイズも 1000 にリサイズする
         bmp = Bitmap.createScaledBitmap(bmp, 1000, 1000, false);
+//        imageRepository.save2ContentProvider(bmp, currentUId);
+        imageRepository.saveImageBitmap(bmp, fontName, currentUId);
 
-        imageRepository.save2ContentProvider(bmp, currentUId);
         clearFontCanvas();
         currentUId = FontMaker.getUId(position);
-        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadFromContentProvider(currentUId)));
+
+//        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadFromContentProvider(currentUId)));
+        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadImageBitmap(fontName, currentUId)));
     }
 
     private void clearFontCanvas() {
         fontCanvas.destroyDrawingCache();
         fontCanvas.clear();
+        fontCanvas.setBackgroundResource(R.drawable.background_white);
     }
 
     private void makeFont() {
@@ -147,11 +156,11 @@ public class MainActivity extends AppCompatActivity {
         FontMaker maker = new FontMaker();
         for (int i = 0; i < FontMaker.getApplyFontSize() + 1; i++) {
             String fontId = FontMaker.getUId(i);
-            Bitmap bmp = imageRepository.loadFromContentProvider(fontId);
+            Bitmap bmp = imageRepository.loadImageBitmap(fontName, fontId);
             maker.addGlyph(bmp, fontId);
         }
 
-        String svg = maker.makeFontSvg("only font");
+        String svg = maker.makeFontSvg(fontName);
         fontRepository.writeSvg(svg);
 
         Snackbar.make(spinner, "書き出しが完了しました",
