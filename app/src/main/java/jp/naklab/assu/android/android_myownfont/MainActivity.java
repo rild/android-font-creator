@@ -159,13 +159,10 @@ public class MainActivity extends AppCompatActivity {
         Bitmap bmp = fontCanvas.getDrawingCache();
         // FontMaker の方で font-svg ファイルへ定義する vert-adv-y を 1000 としているので Bitmap のサイズも 1000 にリサイズする
         bmp = Bitmap.createScaledBitmap(bmp, 1000, 1000, false);
-//        imageRepository.save2ContentProvider(bmp, currentUId);
         imageRepository.saveImageBitmap(bmp, fontName, currentUId);
 
         clearFontCanvas();
         currentUId = FontMaker.getUId(position);
-
-//        fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadFromContentProvider(currentUId)));
         fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadImageBitmap(fontName, currentUId)));
     }
 
@@ -176,10 +173,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void makeFont() {
-//        ProgressDialog progressDialog = ProgressDialog.newInstance("フォントの書き出し中");
-//        progressDialog.show(getSupportFragmentManager(), "Tag");
-
-        // これが目的の svg string
         FontMaker maker = new FontMaker();
         for (int i = 0; i < FontMaker.getApplyFontSize() + 1; i++) {
             String fontId = FontMaker.getUId(i);
@@ -187,12 +180,12 @@ public class MainActivity extends AppCompatActivity {
             maker.addGlyph(bmp, fontId);
         }
 
+        // これが目的の svg string
         String svg = maker.makeFontSvg(fontName);
         fontRepository.writeSvg(svg);
 
         Snackbar.make(spinner, "書き出しが完了しました",
                 Snackbar.LENGTH_SHORT).show();
-//        progressDialog.dismiss();
     }
 
 

@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -85,7 +84,6 @@ public class OpenCVEdgeDetector {
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
         Imgproc.Canny(mat, mat, 110, 130);
 
-        //        Mat mHierarchy = new Mat();
         Mat mHierarchy = Mat.zeros(new Size(5, 5), CvType.CV_8UC1);
 
         // These lines are in function onCameraFrame
