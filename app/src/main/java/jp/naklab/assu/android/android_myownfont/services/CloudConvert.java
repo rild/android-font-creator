@@ -33,7 +33,6 @@ public class CloudConvert {
         ttfFileName = fontName.replaceAll("\\s+", "");
 
         // POSTする画像・音楽・動画等のファイル
-//        String filePath = "/storage/emulated/0/fonts/sample_svg_rialto.svg";
         File file = new File(fontSvgfilePath);
 
         if (!file.exists()) {

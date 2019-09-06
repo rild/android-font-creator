@@ -6,9 +6,7 @@ import retrofit2.Retrofit;
 public class CloudConvertServiceGenerator {
     // ここでベースURLを指定する
 
-    public static final String API_BASE_URL =
-            "https://api.cloudconvert.com/";
-    // v1/convert?input=upload&outputformat=ttf&inputformat=svg&apikey=" + APIUtil.string + "&wait=true&download=inline
+    public static final String API_BASE_URL = "https://api.cloudconvert.com/";
 
     private static OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 

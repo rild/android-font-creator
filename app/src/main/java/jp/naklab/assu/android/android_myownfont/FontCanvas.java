@@ -73,29 +73,16 @@ public class FontCanvas extends View {
                 currentPath = new Path();
                 paths.add(currentPath);
                 currentPathIndex++;
-
                 currentPath.moveTo(x, y);
-//                preX = x;
-//                preY = y;
-//                pathString += pathData("M", x, y);
-
 
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
                 currentPath.lineTo(x, y);
-//                preX = x;
-//                preY = y;
-//
-//                pathString += pathData("L", x, y);
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 currentPath.lineTo(x, y);
-//                preX = x;
-//                preY = y;
-//
-//                pathString += pathData("L", x, y);
                 invalidate();
                 break;
         }
