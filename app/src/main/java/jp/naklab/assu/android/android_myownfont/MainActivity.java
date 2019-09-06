@@ -17,8 +17,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
 
 import org.opencv.android.OpenCVLoader;
+
+import java.util.ArrayList;
 
 import jp.naklab.assu.android.android_myownfont.services.CloudConvert;
 
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     Button buttonRedo;
     Button buttonClear;
 
+    TabLayout tabLayout;
     Spinner spinner;
     String currentUId;
 
@@ -125,6 +129,36 @@ public class MainActivity extends AppCompatActivity {
         // スピナーの要素を選んだ時の処理が初回起動時に動かないようにする
         spinner.setFocusable(false);
 
+        initTabLayout();
+
+    }
+
+    private void initTabLayout() {
+        tabLayout = findViewById(R.id.tablayout_fonts);
+
+        String[] fontArray = getResources().getStringArray(R.array.string_array_font_menu);
+        for(String f: fontArray) {
+            TabLayout.Tab tab = tabLayout.newTab().setText(f);
+            tabLayout.addTab(tab);
+        }
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                onFontItemSelected(tabLayout.getSelectedTabPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
     }
 
     private CloudConvert makeCloudConverter() {
@@ -164,6 +198,10 @@ public class MainActivity extends AppCompatActivity {
         clearFontCanvas();
         currentUId = FontMaker.getUId(position);
         fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadImageBitmap(fontName, currentUId)));
+
+        //TODO FIX 再帰呼び出しにならない？？
+        spinner.setSelection(position);
+        tabLayout.getTabAt(position).select();
     }
 
     private void clearFontCanvas() {
