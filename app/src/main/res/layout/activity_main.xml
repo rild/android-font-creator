@@ -17,8 +17,8 @@
         android:orientation="horizontal"
         android:padding="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintTop_toTopOf="parent">
 
         <Spinner
@@ -26,9 +26,44 @@
             android:id="@+id/spinner_font_menu"
             android:entries="@array/string_array_font_menu"
             android:layout_margin="8dp"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="match_parent" />
+
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/button_make"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="make"
+            android:textSize="12sp" />
+
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/button_convert"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="ttf"
+            android:textSize="12sp" />
+
     </LinearLayout>
+
+    <com.google.android.material.tabs.TabLayout
+        android:background="@drawable/ic_launcher_background"
+        android:id="@+id/tablayout_fonts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabMode="scrollable"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+    </com.google.android.material.tabs.TabLayout>
 
     <jp.naklab.assu.android.android_myownfont.FontCanvas
         android:id="@+id/main_font_canvas"
@@ -37,25 +72,26 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         android:background="@android:color/white"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintDimensionRatio="w,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/tablayout_fonts"
+         />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="72dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/ic_launcher_background"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent">
 
         <Button
@@ -86,31 +122,6 @@
             android:layout_height="48dp"
             android:text="clear"
             android:textSize="12sp" />
-
-        <Space
-            android:layout_width="8dp"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/button_make"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:text="make"
-            android:textSize="12sp" />
-
-        <Space
-            android:layout_width="8dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/button_convert"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="ttf"
-            android:textSize="12sp" />
-
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
