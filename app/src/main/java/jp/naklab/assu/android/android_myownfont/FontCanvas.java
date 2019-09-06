@@ -4,21 +4,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
-import jp.naklab.assu.android.android_myownfont.svgandroid.SVG;
-import jp.naklab.assu.android.android_myownfont.svgandroid.SVGBuilder;
 
 public class FontCanvas extends View {
     final String TAG = "FontFanvas";

@@ -1,4 +1,4 @@
-package jp.naklab.assu.android.android_myownfont.svgandroid;
+package jp.naklab.assu.android.android_myownfont._.svgandroid;
 
 /**
  * Runtime exception thrown when there is a problem parsing an SVG.

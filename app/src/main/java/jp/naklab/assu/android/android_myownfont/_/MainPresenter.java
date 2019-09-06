@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import jp.naklab.assu.android.android_myownfont.entity.Player;
+import jp.naklab.assu.android.android_myownfont._.entity.Player;
 
 public class MainPresenter {
     Context context;

@@ -1,4 +1,4 @@
-package jp.naklab.assu.android.android_myownfont.svgandroid;
+package jp.naklab.assu.android.android_myownfont._.svgandroid;
 
 import java.util.Collections;
 import java.util.HashMap;

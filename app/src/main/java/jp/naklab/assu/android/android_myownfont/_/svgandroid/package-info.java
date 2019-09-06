@@ -20,5 +20,5 @@
  * 
  * @see com.larvalabs.svgandroid.SVGParser
  */
-package jp.naklab.assu.android.android_myownfont.svgandroid;
+package jp.naklab.assu.android.android_myownfont._.svgandroid;
 
