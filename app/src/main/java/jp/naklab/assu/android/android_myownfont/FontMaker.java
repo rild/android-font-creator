@@ -105,8 +105,6 @@ public class FontMaker {
     static final String U7D_CURLY_BRACKETS_ED = "uni7d"; // }
     static final String U7E_TILDE = "uni7e"; // ~
 
-    String fontId = "RialtoNF";
-    String fontFamily = "Rialto NF";
     ArrayList<String> fontGlyphs;
     OpenCVEdgeDetector edgeDetector;
 
