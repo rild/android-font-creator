@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // 何から何に変更されたのかを通知する（別になくてもいい）
-        Snackbar.make(spinner, "[" + spinner.getSelectedItem().toString() + "] " + currentUId + "→" + FontMaker.getUId(position),
+        Snackbar.make(spinner, "[ " + spinner.getSelectedItem().toString() + " ] " + currentUId + "→" + FontMaker.getUId(position),
                 Snackbar.LENGTH_SHORT).show();
 
         Bitmap bmp = fontCanvas.getDrawingCache();
