@@ -20,13 +20,21 @@ import retrofit2.Response;
 
 public class CloudConvert {
     final String TAG = "CloudConvert";
+    private String ttfFileName = "";
+    private OnConvertFinishListener listener;
 
-    public void function() {
+    public void setListener(OnConvertFinishListener listener) {
+        this.listener = listener;
+    }
+
+    public void convert(String fontSvgfilePath, String fontName) {
         CloudConvertService service = CloudConvertServiceGenerator.createService(CloudConvertService.class);
 
+        ttfFileName = fontName.replaceAll("\\s+", "");
+
         // POSTする画像・音楽・動画等のファイル
-        String filePath = "/storage/emulated/0/fonts/sample_svg_rialto.svg";
-        File file = new File(filePath);
+//        String filePath = "/storage/emulated/0/fonts/sample_svg_rialto.svg";
+        File file = new File(fontSvgfilePath);
 
         if (!file.exists()) {
             Log.d(TAG, "not exists" + file.getPath());
@@ -44,12 +52,14 @@ public class CloudConvert {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 CloudConvert.this.onResponse(response);
+                listener.onConvertComplete();
             }
 
             // ステータスコードが４００等エラーコードのとき呼ばれる
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 CloudConvert.this.onFailure();
+                listener.onConvertFailure();
             }
         });
     }
@@ -60,7 +70,7 @@ public class CloudConvert {
         // response.body();でHTMLレスポンスのbodyタグ内が取れる
         Log.d(TAG, "succeeded");
 
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             Log.e(TAG, "Something's gone wrong");
             // TODO: show error message
             return;
@@ -81,7 +91,8 @@ public class CloudConvert {
 
         final String appDirectoryName = "fonts";
         final File imageRoot = new File(Environment.getExternalStorageDirectory().getPath(), appDirectoryName);
-        final String filename = "sample_svg_rialto.ttf";
+        //        final String filename = "sample_svg_rialto.ttf";
+        final String filename = ttfFileName + ".ttf";
 
         @Override
         protected Boolean doInBackground(InputStream... params) {
@@ -111,11 +122,10 @@ public class CloudConvert {
                     if (output != null) {
                         output.close();
                         Log.d(TAG, "Output stream closed sucessfully.");
-                    }
-                    else{
+                    } else {
                         Log.d(TAG, "Output stream is null");
                     }
-                } catch (IOException e){
+                } catch (IOException e) {
                     Log.e(TAG, "Couldn't close output stream: " + e.getMessage());
                     e.printStackTrace();
                     return false;
@@ -131,5 +141,10 @@ public class CloudConvert {
             Log.d(TAG, "Download success: " + result);
             // TODO: show a snackbar or a toast
         }
+    }
+
+    public interface OnConvertFinishListener {
+        void onConvertComplete();
+        void onConvertFailure();
     }
 }

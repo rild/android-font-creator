@@ -20,9 +20,13 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.opencv.android.OpenCVLoader;
 
+import jp.naklab.assu.android.android_myownfont.services.CloudConvert;
+
 public class MainActivity extends AppCompatActivity {
     FontCanvas fontCanvas;
     Button buttonMake;
+    Button buttonConvert;
+
     Button buttonUndo;
     Button buttonRedo;
     Button buttonClear;
@@ -63,11 +67,6 @@ public class MainActivity extends AppCompatActivity {
 
         currentUId = FontMaker.getUId(spinner.getSelectedItemPosition());
         fontCanvas.setBackground(new BitmapDrawable(imageRepository.loadImageBitmap(fontName, currentUId)));
-
-//        CloudConvert cloudConvert = new CloudConvert();
-//        cloudConvert.function();
-
-
     }
 
     private void initViews() {
@@ -78,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         buttonClear = findViewById(R.id.button_clear);
         buttonUndo = findViewById(R.id.button_undo);
         buttonMake = findViewById(R.id.button_make);
+        buttonConvert = findViewById(R.id.button_convert);
 
         // init click listeners
         buttonClear.setOnClickListener(new View.OnClickListener() {
@@ -98,6 +98,15 @@ public class MainActivity extends AppCompatActivity {
                 makeFont();
             }
         });
+        buttonConvert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(spinner, "変換を開始します",
+                        Snackbar.LENGTH_SHORT).show();
+                CloudConvert cloudConvert = makeCloudConverter();
+                cloudConvert.convert(FontRepository.TMP_FILE_PATH, fontName);
+            }
+        });
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -116,6 +125,24 @@ public class MainActivity extends AppCompatActivity {
         // スピナーの要素を選んだ時の処理が初回起動時に動かないようにする
         spinner.setFocusable(false);
 
+    }
+
+    private CloudConvert makeCloudConverter() {
+        CloudConvert cloudConvert = new CloudConvert();
+        cloudConvert.setListener(new CloudConvert.OnConvertFinishListener() {
+            @Override
+            public void onConvertComplete() {
+                Snackbar.make(spinner, "フォントファイルを書き出しました",
+                        Snackbar.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onConvertFailure() {
+                Snackbar.make(spinner, "失敗しました",
+                        Snackbar.LENGTH_SHORT).show();
+            }
+        });
+        return cloudConvert;
     }
 
     private void onFontItemSelected(int position) {

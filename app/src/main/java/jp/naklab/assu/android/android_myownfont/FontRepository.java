@@ -15,7 +15,11 @@ public class FontRepository {
     // コピー対象のファイル名
     private static final String FILE_NAME = "sample_svg_rialto.svg";
     // コピー先のディレクトリパス
-    private static final String BASE_PATH = Environment.getExternalStorageDirectory().getPath() + SEPARATOR + "fonts";
+    public static final String BASE_PATH = Environment.getExternalStorageDirectory().getPath() + SEPARATOR + "fonts";
+    public static final String FILE_NAME_TMP = "sample.svg";
+
+    public static final String TMP_FILE_PATH = Environment.getExternalStorageDirectory().getPath() + SEPARATOR + "fonts" + SEPARATOR + FILE_NAME_TMP;
+
 //  "/storage/emulated/0/fonts/sample_svg_rialto.svg";
 
     private Context context;
@@ -23,6 +27,7 @@ public class FontRepository {
     public FontRepository(Context context) {
         this.context = context;
     }
+
     public boolean copyAssetsFile() {
         // コピー先のディレクトリ
         File dir = new File(BASE_PATH);
@@ -55,7 +60,6 @@ public class FontRepository {
         return true;
     }
 
-    private static final String FILE_NAME_TMP = "sample.svg";
     public boolean writeSvg(String svgString) {
         // コピー先のディレクトリ
         File dir = new File(BASE_PATH);
